@@ -43,8 +43,16 @@ async def agree_terms_cb(callback: CallbackQuery):
 @router.callback_query(F.data == MAIN_MENU_CALLBACK)
 async def handle_main_menu(callback: CallbackQuery):
     await callback.answer("🏠 Главное меню")
-    await callback.message.edit_text(
-                    "<b>Добро пожаловать!</b>\n\n"
-                    "<i>Выбери действие</i> 👇",
-                    reply_markup=categories_menu
-                )
+    try:
+        await callback.message.edit_text(
+                        "<b>Добро пожаловать!</b>\n\n"
+                        "<i>Выбери действие</i> 👇",
+                        reply_markup=categories_menu
+                    )
+    except Exception as e:
+        await callback.message.edit_reply_markup(None)
+        await callback.message.answer(
+                        "<b>Добро пожаловать!</b>\n\n"
+                        "<i>Выбери действие</i> 👇",
+                        reply_markup=categories_menu
+                    )

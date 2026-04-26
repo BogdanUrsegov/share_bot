@@ -3,9 +3,20 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.modules.const_callb import (
-    EARN_CALL, MAIN_MENU_CALLBACK, 
+    EARN_CALL, LOOK_CALL, MAIN_MENU_CALLBACK, 
     TOP_UP_BALANCE_CALL, PROFILE_CALL,
     DAILY_CALL
+)
+
+categories_menu = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="👀 Смотреть", callback_data=LOOK_CALL)
+        ],
+        [
+            InlineKeyboardButton(text="👤 Профиль", callback_data=PROFILE_CALL)
+        ]
+    ]
 )
 
 profile_menu = InlineKeyboardMarkup(inline_keyboard=[

@@ -6,14 +6,13 @@ from bot.modules.const_callb import (
     DAILY_CALL, TOP_UP_BALANCE_CALL, 
     PROFILE_CALL, EARN_CALL
 )
-# from bot.modules.utils import log_to_channel
 from bot.services.crypto_bot import CryptoBotAPI
 from .utils import calculate_price, show_profile
 from bot.database.utils import can_claim_daily_bonus, increase_balance, insert_payment, update_daily_time, update_payment_status
 from .states import TopUpBalance
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from .keyboards import profile_menu, back_menu, get_payment_kb, main_menu
+from .keyboards import profile_menu, back_menu, get_payment_kb, main_menu, categories_menu
 import logging
 
 crypto = CryptoBotAPI(token=os.getenv("CRYPTO_BOT_TOKEN"))
@@ -103,7 +102,7 @@ async def process_topup_amount(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data.startswith("check_invoice:"))
-async def check_invoice_cb(callback: CallbackQuery):
+async def check_invoice_cb(callback: CallbackQuery, bot: Bot):
     user_id = callback.from_user.id
     invoice_id = int(callback.data.split(":")[1])
     count = int(callback.data.split(":")[2])
@@ -122,11 +121,13 @@ async def check_invoice_cb(callback: CallbackQuery):
             await callback.message.edit_text(
                 "✅ <b>Оплата получена!</b>\n\n"
                 f"Ваш баланс пополнен на {count}\n\n"
-                "❤️ <i>Приятного просмотра!</i>"
+                "❤️ <b>Приятного просмотра!</b>"
             )
+            await bot.send_message(ADMIN_ID, f"{user_id} приобрел {count}\n\n/stats - посмотреть статистику")
             await callback.message.answer(
-                "<b>Вернитесь в главное меню</b> ↩️",
-                reply_markup=main_menu
+                        "<b>Добро пожаловать!</b>\n\n"
+                        "<i>Выбери действие</i> 👇",
+                reply_markup=categories_menu
             )
         else:
             # Сообщение с кнопкой остаётся, юзер видит статус во всплывашке
