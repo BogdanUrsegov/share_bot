@@ -30,7 +30,7 @@ async def handle_media(callback: CallbackQuery, bot: Bot):
 
     # 1. Получаем файл
     file_id = await get_random_file_id(telegram_id, media_type)
-    hash = hashlib.md5(file_id.encode()).hexdigest()[:15]
+    hash = hashlib.md5(file_id.encode()).hexdigest()[:15] if file_id else None
     if not file_id:
         await callback.message.answer(
             "❌ <b>Нет доступных файлов в этой категории</b>\n\n<i>Попробуйте позже...</i>",
