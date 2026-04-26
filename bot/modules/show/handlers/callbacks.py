@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery
 from bot.database.utils import add_user_media, decrease_balance, increase_balance
 from bot.database.utils import get_random_file_id
 from bot.modules.const_callb import LOOK_CALL
-# from bot.modules.utils import log_to_channel
+import hashlib
 from ..keyboards.inline_keyboards import categories_menu, PHOTO_CALL, VIDEO_CALL, short_categories_menu, profile_n_main_menu
 import logging
 
@@ -30,6 +30,7 @@ async def handle_media(callback: CallbackQuery, bot: Bot):
 
     # 1. Получаем файл
     file_id = await get_random_file_id(telegram_id, media_type)
+    hash = hashlib.md5(file_id.encode()).hexdigest()[:15]
     if not file_id:
         await callback.message.answer(
             "❌ <b>Нет доступных файлов в этой категории</b>\n\n<i>Попробуйте позже...</i>",
@@ -49,7 +50,7 @@ async def handle_media(callback: CallbackQuery, bot: Bot):
     # 3. Отправляем медиа
     try:
         send_method = callback.message.answer_photo if media_type == "photo" else callback.message.answer_video
-        await send_method(file_id, reply_markup=short_categories_menu)
+        await send_method(file_id, reply_markup=short_categories_menu, caption=hash)
         
         # 4. Успех: логируем и сохраняем историю
         await add_user_media(telegram_id, media_type, file_id)

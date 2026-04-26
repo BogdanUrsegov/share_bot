@@ -50,7 +50,7 @@ async def handle_main_menu(callback: CallbackQuery):
                         reply_markup=categories_menu
                     )
     except Exception as e:
-        await callback.message.edit_reply_markup(None)
+        # await callback.message.edit_reply_markup(None)
         await callback.message.answer(
                         "<b>Добро пожаловать!</b>\n\n"
                         "<i>Выбери действие</i> 👇",
