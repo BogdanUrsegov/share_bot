@@ -6,6 +6,7 @@ from bot.modules.const_callb import (
     DAILY_CALL, TOP_UP_BALANCE_CALL, 
     PROFILE_CALL, EARN_CALL
 )
+# from bot.modules.utils import log_to_channel
 from bot.services.crypto_bot import CryptoBotAPI
 from .utils import calculate_price, show_profile
 from bot.database.utils import can_claim_daily_bonus, increase_balance, insert_payment, update_daily_time, update_payment_status
@@ -16,6 +17,7 @@ from .keyboards import profile_menu, back_menu, get_payment_kb, main_menu
 import logging
 
 crypto = CryptoBotAPI(token=os.getenv("CRYPTO_BOT_TOKEN"))
+ADMIN_ID = os.getenv("ADMIN_ID")
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +155,7 @@ async def handle_daily(callback: CallbackQuery, bot: Bot):
     if await can_claim_daily_bonus(user_id):
         await update_daily_time(user_id)
         await callback.answer("🎉 Вы получили ежедневный бонус: +5")
+        await bot.send_message(ADMIN_ID, f"🎁 {user_id} получил ежедневный бонус")
         await increase_balance(user_id, 5)
         text_profile = await show_profile(user_id)
         await callback.message.edit_text(

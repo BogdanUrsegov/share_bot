@@ -6,6 +6,7 @@ from bot.database.utils import increase_balance, user_checker, add_user
 from bot.database.utils import check_user_agreement
 from bot.scheduler.scheduler import scheduler
 from bot.scheduler.delete_message import delete_telegram_msg
+from bot.modules.utils import log_to_channel
 from ..keyboards.inline_keyboards import agree_menu, categories_menu
 
 

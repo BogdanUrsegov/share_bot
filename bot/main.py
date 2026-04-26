@@ -13,7 +13,6 @@ BASE_URL = os.getenv("WEBHOOK_BASE_URL", "")
 HOST = os.getenv("WEBHOOK_HOST", "0.0.0.0")
 PORT = int(os.getenv("WEBHOOK_PORT", "8000"))
 IS_POLLING = os.getenv("IS_POLLING", "1").strip().lower() in ("1", "true", "yes", "on")
-LOG_CHANNEL_ID = os.getenv("LOG_CHANNEL_ID")
 
 # === Логгирование ===
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
