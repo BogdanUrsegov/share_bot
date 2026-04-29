@@ -1,18 +1,15 @@
 import os
+import random
 from aiogram import Bot, Router, F
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from .states import AddMedia
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from bot.database.utils.add_media import add_media
-
-
-router = Router()
-
+from bot.modules.const_callb import GIVE_LITTLE_CALL, GIVE_LOT_CALL, SKIP_GIVE_CALL
 import logging
-
-from bot.database.utils import all_info, delete_media_by_file_id
+from bot.database.utils import all_info, delete_media_by_file_id, increase_balance
 
 
 ADMIN_ID = os.getenv("ADMIN_ID")
@@ -114,3 +111,29 @@ async def cmd_get_file(message: Message, state: FSMContext, bot: Bot):
             return
         else:
             await message.answer_photo(file_id)
+
+@router.callback_query(F.data.startswith(GIVE_LITTLE_CALL) | F.data.startswith(GIVE_LOT_CALL))
+async def handle_give(callback: CallbackQuery, bot: Bot):
+    if callback.data.startswith(GIVE_LITTLE_CALL):
+        amount = random.randint(4, 6)
+    else:
+        amount = random.randint(8, 10)
+        
+    try:
+        recepient_id = int(callback.data.split(":")[1])
+        await increase_balance(recepient_id, amount)
+        await bot.send_message(recepient_id, f"🎉 <b>Вы получили вознаграждение {amount} 💎</b>\n\n<i>/start - вернуться в меню</i>")
+
+        text_adm = f"{recepient_id} получил {amount} 💎"
+        await callback.message.answer(text_adm)
+        await callback.answer(text_adm)
+        await callback.message.edit_reply_markup(None)
+    except Exception as e:
+        await callback.answer("Ошибка")
+        await callback.message.answer(f"При отправке вознаграждения для {recepient_id} произошла ошибка: {str(e)[:4000]}")
+    
+@router.callback_query(F.data.startswith(SKIP_GIVE_CALL))
+async def handle_skip_give(callback: CallbackQuery, state: FSMContext):
+    recepient_id = int(callback.data.split(":")[1])
+    await callback.message.edit_reply_markup(None)
+    await callback.answer("Без вознаграждения")

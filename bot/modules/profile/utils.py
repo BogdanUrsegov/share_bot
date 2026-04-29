@@ -6,7 +6,7 @@ def calculate_price(count: int) -> tuple[float, float]:
     Базовый курс: 1 ед = 0.1 USDT.
     Скидка увеличивается от объема.
     """
-    base_rate = 0.1
+    base_rate = 0.05
     total = count * base_rate
 
     # Шкала скидок
@@ -34,5 +34,5 @@ async def show_profile(user_id: int):
 
         f"🖼 {photo_count} | 🎥 {video_count}\n\n"
 
-        f"💳 <b>Баланс: {balance}</b>"
+        f"💳 <b>Баланс: {balance}</b> 💎"
     )

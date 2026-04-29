@@ -13,3 +13,13 @@ TOP_UP_BALANCE_CALL = "top_up_balance"
 EARN_CALL = "earn"
 
 DAILY_CALL = "daily"
+
+EARN_CONTENT_CALL = "earn_content"
+
+EARN_FRIENDS_CALL = "earn_friends"
+
+GIVE_LOT_CALL = "give_lot:"
+
+GIVE_LITTLE_CALL = "give_little:"
+
+SKIP_GIVE_CALL = "skip_give:"

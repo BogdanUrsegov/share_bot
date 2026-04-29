@@ -5,7 +5,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from bot.modules.const_callb import (
     EARN_CALL, LOOK_CALL, MAIN_MENU_CALLBACK, 
     TOP_UP_BALANCE_CALL, PROFILE_CALL,
-    DAILY_CALL
+    DAILY_CALL, EARN_FRIENDS_CALL, EARN_CONTENT_CALL
 )
 
 categories_menu = InlineKeyboardMarkup(
@@ -28,6 +28,13 @@ profile_menu = InlineKeyboardMarkup(inline_keyboard=[
 
 back_menu = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="↩️ Назад", callback_data=PROFILE_CALL)]
+    ])
+
+earn_menu = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="👬 Пригласить друга", callback_data=EARN_FRIENDS_CALL)],
+        [InlineKeyboardButton(text="📸 Предложить контент", callback_data=EARN_CONTENT_CALL)],
+        [InlineKeyboardButton(text="↩️ Назад", callback_data=PROFILE_CALL)]
+
     ])
 
 main_menu = InlineKeyboardMarkup(inline_keyboard=[

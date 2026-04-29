@@ -4,6 +4,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
 
 from bot.middlewares.check_user import CheckUserMiddleware
+from bot.middlewares.logging import ChannelLoggerMiddleware
 from .routers import router
 
 # Читаем переменные
@@ -21,6 +22,7 @@ dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(router)
 dp.message.middleware(CheckUserMiddleware())
 dp.callback_query.middleware(CheckUserMiddleware())
+dp.update.middleware(ChannelLoggerMiddleware(LOG_CHANNEL_ID))
 
 
 # Экспортируем

@@ -12,7 +12,7 @@ from bot.database.utils import can_claim_daily_bonus, increase_balance, insert_p
 from .states import TopUpBalance
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from .keyboards import profile_menu, back_menu, get_payment_kb, main_menu, categories_menu
+from .keyboards import profile_menu, back_menu, get_payment_kb, earn_menu, categories_menu
 import logging
 
 crypto = CryptoBotAPI(token=os.getenv("CRYPTO_BOT_TOKEN"))
@@ -94,7 +94,8 @@ async def process_topup_amount(message: Message, state: FSMContext):
         f"💎 <b>К оплате:</b> {amount} USDT {discount_text}\n\n"
         "1. Нажмите <b>«Оплатить»</b>\n"
         "2. Затем <b>«Проверить»</b>\n\n"
-        f"<i>После оплаты ваш баланс будет увеличен на <b>{count}</b></i>"
+        f"<i>После оплаты ваш баланс будет увеличен на <b>{count}</b></i> 💎\n\n"
+        "<i>/start - вернуться в меню</i>"
     )
     await message.answer(text, reply_markup=get_payment_kb(amount, invoice["bot_invoice_url"], invoice["invoice_id"], count))
     
@@ -138,16 +139,20 @@ async def check_invoice_cb(callback: CallbackQuery, bot: Bot):
         await callback.answer(f"❌ Error")
 
 @router.callback_query(F.data == EARN_CALL)
-async def handle_earn(callback: CallbackQuery, bot: Bot):
+async def handle_earn(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await callback.answer("💰 Заработать")
     user_id = callback.from_user.id
     bot_username = (await bot.get_me()).username
     await callback.message.edit_text(
-        "🤝 <b>Приглашай друзей — увеличивай баланс!</b>\n\n"
-        "💰 За каждого приглашенного: +2 на баланс\n\n"
-        f"<b>Делись своей ссылкой:</b>\n<code>https://t.me/{bot_username}?start={user_id}</code> (нажми, чтобы скопировать)",
-        reply_markup=back_menu
+        "<b>Заработай 💎</b>\n\n"
+        "Выбери способ:\n\n"
+        "🤝 <b>Приглашай друзей</b>\n"
+        "<i>Увеличивай баланс за рефералов</i>\n\n"
+        "📽 <b>Предлагай контент</b>\n"
+        "<i>Получай вознаграждение за новые материалы</i>",
+        reply_markup=earn_menu
     )
+    await state.clear()
 
 @router.callback_query(F.data == DAILY_CALL)
 async def handle_daily(callback: CallbackQuery, bot: Bot):
