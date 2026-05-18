@@ -58,7 +58,7 @@ async def cmd_start(message: types.Message, bot: Bot):
                     pass # Игнорируем ошибки отправки (например, если бот заблокирован)
 
             await message.answer(
-                "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Policy-04-11-12\">условия</a> и продолжить.</i>",
+                "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">политику кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a></i>",
                 reply_markup=agree_menu,
                 disable_web_page_preview=True,
                 parse_mode="HTML"
