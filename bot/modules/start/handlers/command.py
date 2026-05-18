@@ -7,6 +7,7 @@ from bot.database.utils import check_user_agreement
 from bot.scheduler.scheduler import scheduler
 from bot.scheduler.delete_message import delete_telegram_msg
 from bot.modules.utils import log_to_channel
+from aiogram.fsm.context import FSMContext
 from ..keyboards.inline_keyboards import agree_menu, categories_menu
 
 
@@ -16,7 +17,7 @@ router = Router()
 
 
 @router.message(Command("start"))
-async def cmd_start(message: types.Message, bot: Bot):
+async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
     telegram_id = message.from_user.id
 
     # Проверяем, существует ли пользователь
@@ -72,6 +73,7 @@ async def cmd_start(message: types.Message, bot: Bot):
                 reply_markup=categories_menu)
             chat_id = mess.chat.id
             mess_id = mess.message_id
+            await state.clear()
         else:
             await message.answer(
                 "👇 <i>Please agree to the <a href=\"https://telegra.ph/Policy-04-11-12\">terms</a> to continue.</i>",
