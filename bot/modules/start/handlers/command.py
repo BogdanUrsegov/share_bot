@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 import os
 from aiogram import Bot, Router, types
 from aiogram.filters import Command
-from bot.database.utils import increase_balance, user_checker, add_user
-from bot.database.utils import check_user_agreement
+from bot.database.utils import increase_balance, user_checker, add_user, check_user_agreement, delete_user_by_telegram_id
 from bot.scheduler.scheduler import scheduler
 from bot.scheduler.delete_message import delete_telegram_msg
 from bot.modules.utils import log_to_channel
@@ -80,3 +79,13 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
                 reply_markup=agree_menu,
                 disable_web_page_preview=True
             )
+
+@router.message(Command("delete_me"))
+async def cmd_delete_me(message: types.Message, bot: Bot, state: FSMContext):
+    telegram_id = message.from_user.id
+
+    res = await delete_user_by_telegram_id(telegram_id)
+    if res[0]:
+        await message.answer("✅ Ваш аккаунт и все связанные данные были удалены.")
+    else:
+        await message.answer("❌ Произошла ошибка при удалении вашего аккаунта. Пожалуйста, попробуйте позже.")

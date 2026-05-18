@@ -13,6 +13,7 @@ from .decrease_balance import decrease_balance
 from .can_claim_daily_bonus import can_claim_daily_bonus
 from .update_daily_time import update_daily_time
 from .delete_media_by_file_id import delete_media_by_file_id
+from .delete_user_by_telegram_id import delete_user_by_telegram_id
 
 __all__ = [
     "add_user",
@@ -29,5 +30,6 @@ __all__ = [
     "decrease_balance",
     "can_claim_daily_bonus",
     "update_daily_time",
-    "delete_media_by_file_id"
+    "delete_media_by_file_id",
+    "delete_user_by_telegram_id"
 ]
