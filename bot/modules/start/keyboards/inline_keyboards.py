@@ -3,7 +3,7 @@ from bot.modules.const_callb import AGREE_TERMS_CALLBACK, LOOK_CALL, PROFILE_CAL
 
 agree_menu = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Agree ✅", callback_data=AGREE_TERMS_CALLBACK)],
+        [InlineKeyboardButton(text="Согласиться и продолжить ✅", callback_data=AGREE_TERMS_CALLBACK)],
     ]
 )
 

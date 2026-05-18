@@ -21,7 +21,7 @@ async def agree_terms_cb(callback: CallbackQuery):
     if is_user:
         # Обновляем статус согласия в БД
         await update_user_agreement(telegram_id)
-        text = "✅ You have agreed to the terms!"
+        text = "✅ Вы согласились с условиями!"
         await callback.answer(text, show_alert=True)
         await callback.message.edit_text(text=text, reply_markup=None)  # Удаляем клавиатуру
         mess = await callback.message.answer(
