@@ -89,3 +89,11 @@ async def cmd_delete_me(message: types.Message, bot: Bot, state: FSMContext):
         await message.answer("✅ Ваш аккаунт и все связанные данные были удалены.")
     else:
         await message.answer("❌ Произошла ошибка при удалении вашего аккаунта. Пожалуйста, попробуйте позже.")
+
+@router.message(Command("policy"))
+async def cmd_policy(message: types.Message, bot: Bot, state: FSMContext):
+    await message.answer("<a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">Политика кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a>")
+
+@router.message(Command("support"))
+async def cmd_support(message: types.Message, bot: Bot, state: FSMContext):
+    await message.answer("Если у вас возникли вопросы или проблемы, пожалуйста, свяжитесь с нашей поддержкой: @HE_CEBEPHO")
