@@ -26,7 +26,7 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
         parts = message.text.split()
         start_param = parts[1] if len(parts) > 1 else None
         
-        is_allowed = False
+        is_allowed = True
         ref_id = None
 
         # 1. Проверка параметров
