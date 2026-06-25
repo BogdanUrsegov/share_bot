@@ -1,11 +1,8 @@
-from datetime import datetime, timedelta
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from bot.database.utils import user_checker, update_user_agreement
 from bot.modules.const_callb import MAIN_MENU_CALLBACK
-from bot.scheduler.scheduler import scheduler
 from ..keyboards.inline_keyboards import categories_menu
-from bot.scheduler.delete_message import delete_telegram_msg
 from ..keyboards.inline_keyboards import AGREE_TERMS_CALLBACK
 
 

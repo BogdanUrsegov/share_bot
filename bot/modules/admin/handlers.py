@@ -31,7 +31,7 @@ async def cmd_pay(message: Message):
             f"👥 Пользователей: <code>{stats['total_users']}</code>\n"
             f"📦 Ордеров: <code>{stats['total_orders']}</code>\n"
             f"✅ Оплачено: <code>{stats['paid_orders_count']}</code>\n"
-            f"💰 Сумма: <code>{stats['paid_orders_sum']:,.2f} USDT</code>\n\n"
+            f"💰 Сумма: <code>{stats['paid_orders_sum']:,.2f} RUB</code>\n\n"
             f"🖼 Фото в базе: <code>{stats['total_photos']}</code>\n"
             f"🎥 Видео в базе: <code>{stats['total_videos']}</code>"
         )

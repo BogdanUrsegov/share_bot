@@ -1,11 +1,7 @@
-from datetime import datetime, timedelta
 import os
 from aiogram import Bot, Router, types
 from aiogram.filters import Command
 from bot.database.utils import increase_balance, user_checker, add_user, check_user_agreement, delete_user_by_telegram_id
-from bot.scheduler.scheduler import scheduler
-from bot.scheduler.delete_message import delete_telegram_msg
-from bot.modules.utils import log_to_channel
 from aiogram.fsm.context import FSMContext
 from ..keyboards.inline_keyboards import agree_menu, categories_menu
 
@@ -66,12 +62,10 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
     else:
         if await check_user_agreement(telegram_id):
             
-            mess = await message.answer(
+            await message.answer(
                 "<b>Добро пожаловать!</b>\n\n"
                 "<i>Выбери действие</i> 👇",
                 reply_markup=categories_menu)
-            chat_id = mess.chat.id
-            mess_id = mess.message_id
             await state.clear()
         else:
             await message.answer(

@@ -7,3 +7,4 @@ sqlalchemy[asyncio]==2.0.30  # ← если используешь ORM
 redis==7.1.0
 asyncpg
 apscheduler
+requests

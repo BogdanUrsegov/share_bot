@@ -2,6 +2,8 @@ import aiohttp
 import logging
 from typing import Optional, Any
 
+
+USDT_RATE = 75
 logger = logging.getLogger(__name__)
 
 class CryptoBotAPI:
@@ -43,7 +45,7 @@ class CryptoBotAPI:
         """
         return await self._request("createInvoice", {
             "asset": asset,
-            "amount": str(amount),
+            "amount": str(round(amount / USDT_RATE, 2)),
             "description": description,
             "payload": payload,
             "accepted_assets": [asset],

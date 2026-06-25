@@ -5,6 +5,8 @@ from aiogram import Bot, Dispatcher
 
 from bot.middlewares.check_user import CheckUserMiddleware
 from bot.middlewares.logging import ChannelLoggerMiddleware
+from bot.utils.telegram_log_handler import TelegramLogHandler
+import logging
 from .routers import router
 
 # Читаем переменные
@@ -18,6 +20,23 @@ if not all([BOT_TOKEN, ADMIN_ID]):
 
 # Создаём компоненты
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+
+telegram_handler = TelegramLogHandler(
+    bot=bot,
+    channel_id=LOG_CHANNEL_ID
+)
+
+telegram_handler.setLevel(logging.WARNING)
+
+telegram_handler.setFormatter(
+logging.Formatter(
+        "%(name)s | %(funcName)s | %(message)s"
+    )
+)
+
+logging.getLogger().addHandler(
+    telegram_handler
+)
 dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(router)
 dp.message.middleware(CheckUserMiddleware())
