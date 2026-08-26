@@ -37,6 +37,7 @@ logging.Formatter(
 logging.getLogger().addHandler(
     telegram_handler
 )
+
 dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(router)
 dp.message.middleware(CheckUserMiddleware())

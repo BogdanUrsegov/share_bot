@@ -3,6 +3,8 @@ from aiogram import Bot, Router, types
 from aiogram.filters import Command
 from bot.database.utils import increase_balance, user_checker, add_user, check_user_agreement, delete_user_by_telegram_id
 from aiogram.fsm.context import FSMContext
+
+from bot.modules.start.states import AgreeTerms
 from ..keyboards.inline_keyboards import agree_menu, categories_menu
 
 
@@ -22,7 +24,7 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
         parts = message.text.split()
         start_param = parts[1] if len(parts) > 1 else None
         
-        is_allowed = True
+        is_allowed = False
         ref_id = None
 
         # 1. Проверка параметров
@@ -38,21 +40,13 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
 
         # 2. Если все ок, регистрируем и начисляем бонус
         if is_allowed:
+            await state.set_state(AgreeTerms.agree)
             await add_user(telegram_id)
             await bot.send_message(ADMIN_ID, f"👤 Новый пользователь {telegram_id}")
             
             # Начисление бонуса рефереру (если он есть)
             if ref_id:
-                await increase_balance(ref_id, 2)
-                try:
-                    await bot.send_message(
-                        ref_id, 
-                        "🎁 <b>Вы получили бонус за приглашенного пользователя!</b>",
-                        reply_markup=categories_menu
-                    )
-                except Exception:
-                    pass # Игнорируем ошибки отправки (например, если бот заблокирован)
-
+                await state.update_data(ref_id=ref_id)
             await message.answer(
                 "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">политику кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a></i>",
                 reply_markup=agree_menu,
@@ -69,9 +63,10 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
             await state.clear()
         else:
             await message.answer(
-                "👇 <i>Please agree to the <a href=\"https://telegra.ph/Policy-04-11-12\">terms</a> to continue.</i>",
+                "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">политику кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a></i>",
                 reply_markup=agree_menu,
-                disable_web_page_preview=True
+                disable_web_page_preview=True,
+                parse_mode="HTML"
             )
 
 @router.message(Command("delete_me"))

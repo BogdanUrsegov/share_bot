@@ -1,7 +1,9 @@
-from aiogram import Router, F
+from aiogram import Bot, Router, F
 from aiogram.types import CallbackQuery
-from bot.database.utils import user_checker, update_user_agreement
+from bot.database.utils import increase_balance, user_checker, update_user_agreement
 from bot.modules.const_callb import MAIN_MENU_CALLBACK
+from aiogram.fsm.context import FSMContext
+
 from ..keyboards.inline_keyboards import categories_menu
 from ..keyboards.inline_keyboards import AGREE_TERMS_CALLBACK
 
@@ -9,7 +11,7 @@ from ..keyboards.inline_keyboards import AGREE_TERMS_CALLBACK
 router = Router()
 
 @router.callback_query(F.data == AGREE_TERMS_CALLBACK)
-async def agree_terms_cb(callback: CallbackQuery):
+async def agree_terms_cb(callback: CallbackQuery, state: FSMContext, bot: Bot):
     telegram_id = callback.from_user.id
 
     # Проверяем, существует ли пользователь
@@ -26,13 +28,19 @@ async def agree_terms_cb(callback: CallbackQuery):
             reply_markup=categories_menu)
         chat_id = mess.chat.id
         mess_id = mess.message_id
-        # scheduler.add_job(
-        #     func=delete_telegram_msg,
-        #     trigger='date',
-        #     run_date=datetime.now() + timedelta(minutes=30),
-        #     id=f'dltmsg_{chat_id}_{mess_id}',
-        #     kwargs={'chat_id': chat_id, 'message_id': mess_id}
-        # )
+        data = await state.get_data()
+        ref_id = data.get("ref_id")
+        await increase_balance(ref_id, 2)
+        try:
+            await bot.send_message(
+                ref_id, 
+                "🎁 <b>Вы получили бонус за приглашенного пользователя!</b>",
+                reply_markup=categories_menu
+            )
+        except Exception:
+            pass # Игнорируем ошибки отправки (например, если бот заблокирован)
+        await state.clear()
+        
     else:
         await callback.answer("❌ User not found. Please start the bot with /start.", show_alert=True)
 
