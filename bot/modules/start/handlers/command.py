@@ -48,7 +48,7 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
             if ref_id:
                 await state.update_data(ref_id=ref_id)
             await message.answer(
-                "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">политику кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a></i>",
+                "👇 <i>Нажмите кнопку ниже, чтобы принять <a href=\"https://telegra.ph/Politika-konfidencialnosti-04-01-26\">политику кофиденциальности</a> и <a href=\"https://telegra.ph/Polzovatelskoe-soglashenie-04-01-19\">пользовательское соглашение</a></i>\n\nПродолжая, вы соглашаетесь, что вам исполнилось 18 лет",
                 reply_markup=agree_menu,
                 disable_web_page_preview=True,
                 parse_mode="HTML"
