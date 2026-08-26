@@ -85,4 +85,4 @@ async def cmd_policy(message: types.Message, bot: Bot, state: FSMContext):
 
 @router.message(Command("support"))
 async def cmd_support(message: types.Message, bot: Bot, state: FSMContext):
-    await message.answer("Если у вас возникли вопросы или проблемы, пожалуйста, свяжитесь с нашей поддержкой: @HE_CEBEPHO")
+    await message.answer("Если у вас возникли вопросы или проблемы, пожалуйста, свяжитесь с нашей поддержкой: @pinqblu")
