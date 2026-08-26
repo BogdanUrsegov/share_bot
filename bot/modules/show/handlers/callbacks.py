@@ -50,7 +50,7 @@ async def handle_media(callback: CallbackQuery, bot: Bot):
     # 3. Отправляем медиа
     try:
         send_method = callback.message.answer_photo if media_type == "photo" else callback.message.answer_video
-        await send_method(file_id, reply_markup=short_categories_menu, caption=hash)
+        await send_method(file_id, reply_markup=short_categories_menu, caption=hash, protect_content=True)
         
         # 4. Успех: логируем и сохраняем историю
         await add_user_media(telegram_id, media_type, file_id)
