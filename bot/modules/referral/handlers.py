@@ -24,6 +24,10 @@ def _is_admin(user_id: int) -> bool:
     return str(user_id) == str(ADMIN_ID)
 
 
+def _viewer_text(viewer_id: int | None) -> str:
+    return "-" if viewer_id in (None, 0) else str(viewer_id)
+
+
 def _help(command: str | None = None) -> str:
     if command == "create":
         return (
@@ -89,7 +93,7 @@ async def ref_create(message: Message):
         f"ID: <code>#{link.code}</code>\n"
         f"Ссылка: <code>{url}</code>\n"
         f"Цена перехода: <code>{'-' if price is None else price}</code>\n"
-        f"Viewer ID: <code>{'-' if viewer_id is None else viewer_id}</code>"
+        f"Viewer ID: <code>{_viewer_text(link.viewer_id)}</code>"
     )
 
 
@@ -108,7 +112,7 @@ async def ref_list(message: Message):
         lines.append(
             f"\n<b>#{link.code}</b> — <code>{link.name}</code>\n"
             f"{url}\n"
-            f"Цена: <code>{'-' if link.price is None else link.price}</code> | Viewer: <code>{'-' if link.viewer_id is None else link.viewer_id}</code>"
+            f"Цена: <code>{'-' if link.price is None else link.price}</code> | Viewer: <code>{_viewer_text(link.viewer_id)}</code>"
         )
     await message.answer("\n".join(lines))
 
@@ -122,7 +126,7 @@ async def ref_stats(message: Message):
     link = await get_referral_link(args[0])
     if not link:
         return await message.answer("❌ Реферальная ссылка не найдена.")
-    if not (_is_admin(message.from_user.id) or (link.viewer_id is not None and message.from_user.id == link.viewer_id)):
+    if not (_is_admin(message.from_user.id) or (link.viewer_id not in (None, 0) and message.from_user.id == link.viewer_id)):
         return await message.answer("❌ У вас нет доступа к статистике этой ссылки.")
 
     stats = await get_referral_stats(link.code)
