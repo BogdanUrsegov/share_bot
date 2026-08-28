@@ -18,7 +18,6 @@ async def create_referral_link(name: str, price: float | None, viewer_id: int) -
             exists = await session.scalar(select(ReferralLink.id).where(ReferralLink.code == code))
             if not exists:
                 break
-
         link = ReferralLink(code=code, name=name, price=price, viewer_id=viewer_id)
         session.add(link)
         await session.commit()
@@ -35,6 +34,11 @@ async def get_referral_links() -> list[ReferralLink]:
 async def get_referral_link(code: str) -> ReferralLink | None:
     async with AsyncSessionLocal() as session:
         return await session.scalar(select(ReferralLink).where(ReferralLink.code == code.lstrip("#")))
+
+
+async def get_referral_link_by_name(name: str) -> ReferralLink | None:
+    async with AsyncSessionLocal() as session:
+        return await session.scalar(select(ReferralLink).where(ReferralLink.name == name))
 
 
 async def delete_referral_link(code: str) -> bool:
@@ -69,7 +73,6 @@ async def get_referral_stats(code: str) -> dict | None:
         link = await session.scalar(select(ReferralLink).where(ReferralLink.code == code.lstrip("#")))
         if not link:
             return None
-
         clicks = (await session.scalars(
             select(ReferralClick)
             .where(ReferralClick.referral_id == link.id)
