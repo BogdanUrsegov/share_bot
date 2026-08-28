@@ -18,7 +18,9 @@ async def create_referral_link(name: str, price: float | None, viewer_id: int | 
             exists = await session.scalar(select(ReferralLink.id).where(ReferralLink.code == code))
             if not exists:
                 break
-        link = ReferralLink(code=code, name=name, price=price, viewer_id=viewer_id)
+        # 0 is used for "no viewer" so deployment over an already-created
+        # NOT NULL referral_links.viewer_id column remains compatible.
+        link = ReferralLink(code=code, name=name, price=price, viewer_id=viewer_id or 0)
         session.add(link)
         await session.commit()
         await session.refresh(link)
@@ -64,7 +66,7 @@ async def record_referral_click(
 
     A click counts only when the Telegram user is not already in the users table.
     Admin and the link's configured viewer never count as referral clicks.
-    The caller uses the return value as the start-flow `is_allowed` flag.
+    The return value is used by the start handler as the access flag.
     """
     async with AsyncSessionLocal() as session:
         link = await session.scalar(select(ReferralLink).where(ReferralLink.name == name))
@@ -72,18 +74,18 @@ async def record_referral_click(
             return False
 
         if str(telegram_id) == str(admin_id) or (
-            link.viewer_id is not None and telegram_id == link.viewer_id
+            link.viewer_id not in (None, 0) and telegram_id == link.viewer_id
         ):
             return True
 
-        # Existing users must never generate a second referral conversion.
+        # A user already registered in the bot is never a referral conversion.
         existing_user = await session.scalar(
             select(User.id).where(User.telegram_id == telegram_id)
         )
         if existing_user is not None:
             return False
 
-        # Protect against duplicates even if the handler is invoked concurrently.
+        # Also guard the referral table itself against duplicate conversions.
         existing_click = await session.scalar(
             select(ReferralClick.id).where(
                 ReferralClick.referral_id == link.id,
