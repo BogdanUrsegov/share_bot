@@ -28,11 +28,10 @@ def _help(command: str | None = None) -> str:
     if command == "create":
         return (
             "📌 <b>/ref_create</b>\n\n"
-            "Создание реферальной ссылки.\n\n"
-            "<code>/ref_create &lt;name&gt; &lt;price|-&gt; &lt;viewer_id&gt;</code>\n\n"
-            "name — только латиница и цифры в нижнем регистре.\n"
-            "price — стоимость перехода, вещественное число, либо <code>-</code>.\n"
-            "viewer_id — Telegram ID единственного дополнительного пользователя, который может смотреть статистику."
+            "<code>/ref_create &lt;name&gt; &lt;price|-&gt; &lt;viewer_id|-&gt;</code>\n\n"
+            "name — только строчная латиница и цифры.\n"
+            "price — вещественное число либо <code>-</code>.\n"
+            "viewer_id — Telegram ID единственного дополнительного пользователя либо <code>-</code>, если доступ к статистике только у админа."
         )
     if command == "stats":
         return "📊 <b>/ref_stats</b> <code>&lt;link_id&gt;</code>\nПример: <code>/ref_stats #A7k3X9</code>"
@@ -40,7 +39,7 @@ def _help(command: str | None = None) -> str:
         return "🗑 <b>/ref_delete</b> <code>&lt;link_id&gt;</code>\nПример: <code>/ref_delete #A7k3X9</code>"
     return (
         "🔗 <b>Реферальные команды</b>\n\n"
-        "<code>/ref_create &lt;name&gt; &lt;price|-&gt; &lt;viewer_id&gt;</code> — создать ссылку\n"
+        "<code>/ref_create &lt;name&gt; &lt;price|-&gt; &lt;viewer_id|-&gt;</code> — создать ссылку\n"
         "<code>/ref_list</code> — список ссылок\n"
         "<code>/ref_stats &lt;link_id&gt;</code> — статистика\n"
         "<code>/ref_delete &lt;link_id&gt;</code> — удалить ссылку"
@@ -72,12 +71,15 @@ async def ref_create(message: Message):
         except ValueError:
             return await message.answer("❌ price должен быть конечным неотрицательным вещественным числом или <code>-</code>.\n\n" + _help("create"))
 
-    try:
-        viewer_id = int(viewer_raw)
-        if viewer_id <= 0:
-            raise ValueError
-    except ValueError:
-        return await message.answer("❌ viewer_id должен быть Telegram ID.\n\n" + _help("create"))
+    if viewer_raw == "-":
+        viewer_id = None
+    else:
+        try:
+            viewer_id = int(viewer_raw)
+            if viewer_id <= 0:
+                raise ValueError
+        except ValueError:
+            return await message.answer("❌ viewer_id должен быть Telegram ID или <code>-</code>.\n\n" + _help("create"))
 
     link = await create_referral_link(name, price, viewer_id)
     me = await message.bot.get_me()
@@ -87,7 +89,7 @@ async def ref_create(message: Message):
         f"ID: <code>#{link.code}</code>\n"
         f"Ссылка: <code>{url}</code>\n"
         f"Цена перехода: <code>{'-' if price is None else price}</code>\n"
-        f"Viewer ID: <code>{viewer_id}</code>"
+        f"Viewer ID: <code>{'-' if viewer_id is None else viewer_id}</code>"
     )
 
 
@@ -106,7 +108,7 @@ async def ref_list(message: Message):
         lines.append(
             f"\n<b>#{link.code}</b> — <code>{link.name}</code>\n"
             f"{url}\n"
-            f"Цена: <code>{'-' if link.price is None else link.price}</code> | Viewer: <code>{link.viewer_id}</code>"
+            f"Цена: <code>{'-' if link.price is None else link.price}</code> | Viewer: <code>{'-' if link.viewer_id is None else link.viewer_id}</code>"
         )
     await message.answer("\n".join(lines))
 
@@ -120,22 +122,25 @@ async def ref_stats(message: Message):
     link = await get_referral_link(args[0])
     if not link:
         return await message.answer("❌ Реферальная ссылка не найдена.")
-    if not (_is_admin(message.from_user.id) or message.from_user.id == link.viewer_id):
+    if not (_is_admin(message.from_user.id) or (link.viewer_id is not None and message.from_user.id == link.viewer_id)):
         return await message.answer("❌ У вас нет доступа к статистике этой ссылки.")
 
     stats = await get_referral_stats(link.code)
     me = await message.bot.get_me()
     url = f"https://t.me/{me.username}?start=ad_{link.name}"
     countries = stats["countries"]
-    country_text = "\n".join(f"  {country}: {count}" for country, count in countries.most_common()) or "  —"
+    total = stats["clicks"]
+    country_text = "\n".join(
+        f"  {country}: {count} ({count / total * 100:.1f}%)" for country, count in countries.most_common()
+    ) if total else "  —"
     total_cost = "-" if stats["total_cost"] is None else f"{stats['total_cost']:.2f}"
-    price = "-" if link.price is None else f"{link.price:.2f}"
+    price = "-" if link.price is None else f"{float(link.price):.4f}"
 
     await message.answer(
         "📊 <b>Статистика реферальной ссылки</b>\n\n"
         f"ID: <code>#{link.code}</code>\n"
         f"Ссылка: <code>{url}</code>\n\n"
-        f"Переходов: <code>{stats['clicks']}</code>\n"
+        f"Переходов: <code>{total}</code>\n"
         f"Premium: <code>{stats['premium']}</code>\n"
         f"Цена перехода: <code>{price}</code>\n"
         f"Итоговая стоимость: <code>{total_cost}</code>\n\n"
