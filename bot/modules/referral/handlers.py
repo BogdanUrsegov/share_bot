@@ -1,3 +1,4 @@
+import math
 import os
 import re
 
@@ -9,6 +10,7 @@ from bot.database.utils.referrals import (
     create_referral_link,
     delete_referral_link,
     get_referral_link,
+    get_referral_link_by_name,
     get_referral_links,
     get_referral_stats,
 )
@@ -57,16 +59,18 @@ async def ref_create(message: Message):
     name, price_raw, viewer_raw = args
     if not NAME_RE.fullmatch(name):
         return await message.answer("❌ name должен содержать только строчные латинские буквы и цифры.\n\n" + _help("create"))
+    if await get_referral_link_by_name(name):
+        return await message.answer("❌ Ссылка с таким name уже существует.")
 
     if price_raw == "-":
         price = None
     else:
         try:
             price = float(price_raw)
-            if price < 0:
+            if not math.isfinite(price) or price < 0:
                 raise ValueError
         except ValueError:
-            return await message.answer("❌ price должен быть вещественным числом или <code>-</code>.\n\n" + _help("create"))
+            return await message.answer("❌ price должен быть конечным неотрицательным вещественным числом или <code>-</code>.\n\n" + _help("create"))
 
     try:
         viewer_id = int(viewer_raw)
