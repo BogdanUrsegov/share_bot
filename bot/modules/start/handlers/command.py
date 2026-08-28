@@ -1,10 +1,20 @@
 import os
+
 from aiogram import Bot, Router, types
 from aiogram.filters import Command
-from bot.database.utils import increase_balance, user_checker, add_user, check_user_agreement, delete_user_by_telegram_id
-from bot.database.utils.referrals import record_referral_click
 from aiogram.fsm.context import FSMContext
 
+from bot.database.utils import (
+    add_user,
+    check_user_agreement,
+    delete_user_by_telegram_id,
+    user_checker,
+)
+from bot.database.utils.referrals import (
+    get_referral_link_by_name,
+    get_referral_stats,
+    record_referral_click,
+)
 from bot.modules.start.states import AgreeTerms
 from ..keyboards.inline_keyboards import agree_menu, categories_menu
 
@@ -12,6 +22,30 @@ from ..keyboards.inline_keyboards import agree_menu, categories_menu
 ADMIN_ID = os.getenv("ADMIN_ID")
 param_start = os.getenv("START_PARAM")
 router = Router()
+
+
+async def _send_referral_stats(message: types.Message, link, bot: Bot):
+    stats = await get_referral_stats(link.code)
+    if not stats:
+        return
+    me = await bot.get_me()
+    url = f"https://t.me/{me.username}?start=ad_{link.name}"
+    countries = stats["countries"]
+    country_text = "\n".join(
+        f"  {country}: {count}" for country, count in countries.most_common()
+    ) or "  —"
+    price = "-" if link.price is None else f"{link.price:.2f}"
+    total_cost = "-" if stats["total_cost"] is None else f"{stats['total_cost']:.2f}"
+    await message.answer(
+        "📊 <b>Статистика реферальной ссылки</b>\n\n"
+        f"ID: <code>#{link.code}</code>\n"
+        f"Ссылка: <code>{url}</code>\n\n"
+        f"Переходов: <code>{stats['clicks']}</code>\n"
+        f"Premium: <code>{stats['premium']}</code>\n"
+        f"Цена перехода: <code>{price}</code>\n"
+        f"Итоговая стоимость: <code>{total_cost}</code>\n\n"
+        f"🌍 <b>Страны / language_code:</b>\n{country_text}"
+    )
 
 
 @router.message(Command("start"))
@@ -23,15 +57,23 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
     # Реферальный переход фиксируется непосредственно при /start.
     # is_allowed — флаг, который пропускает пользователя дальше в текущую логику.
     is_allowed = False
+    referral_link = None
     if start_param and start_param.startswith("ad_"):
         referral_name = start_param[3:]
         if referral_name:
-            is_allowed = await record_referral_click(
-                referral_name,
-                telegram_id,
-                message.from_user.language_code,
-                bool(message.from_user.is_premium),
-            )
+            referral_link = await get_referral_link_by_name(referral_name)
+            if referral_link:
+                is_allowed = await record_referral_click(
+                    referral_name,
+                    telegram_id,
+                    message.from_user.language_code,
+                    bool(message.from_user.is_premium),
+                )
+
+                # Админ или назначенный viewer получает статистику сразу при переходе.
+                if telegram_id == referral_link.viewer_id or str(telegram_id) == str(ADMIN_ID):
+                    await _send_referral_stats(message, referral_link, bot)
+                    return
 
     is_user = await user_checker(telegram_id)
 
@@ -80,7 +122,6 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
 @router.message(Command("delete_me"))
 async def cmd_delete_me(message: types.Message, bot: Bot, state: FSMContext):
     telegram_id = message.from_user.id
-
     res = await delete_user_by_telegram_id(telegram_id)
     if res[0]:
         await message.answer("✅ Ваш аккаунт и все связанные данные были удалены.")
