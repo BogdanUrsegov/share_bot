@@ -16,20 +16,9 @@ from .delete_media_by_file_id import delete_media_by_file_id
 from .delete_user_by_telegram_id import delete_user_by_telegram_id
 
 __all__ = [
-    "add_user",
-    "user_checker",
-    "update_user_agreement",
-    "check_user_agreement",
-    "insert_payment",
-    "update_payment_status",
-    "all_info",
-    "get_random_file_id",
-    "add_user_media",
-    "get_user_stats",
-    "increase_balance",
-    "decrease_balance",
-    "can_claim_daily_bonus",
-    "update_daily_time",
-    "delete_media_by_file_id",
+    "add_user", "user_checker", "update_user_agreement", "check_user_agreement",
+    "insert_payment", "update_payment_status", "all_info", "get_random_file_id",
+    "add_user_media", "get_user_stats", "increase_balance", "decrease_balance",
+    "can_claim_daily_bonus", "update_daily_time", "delete_media_by_file_id",
     "delete_user_by_telegram_id"
 ]
