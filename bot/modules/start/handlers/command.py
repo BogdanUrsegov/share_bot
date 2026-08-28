@@ -31,16 +31,18 @@ async def _send_referral_stats(message: types.Message, link, bot: Bot):
     me = await bot.get_me()
     url = f"https://t.me/{me.username}?start=ad_{link.name}"
     countries = stats["countries"]
+    total = stats["clicks"]
     country_text = "\n".join(
-        f"  {country}: {count}" for country, count in countries.most_common()
-    ) or "  —"
-    price = "-" if link.price is None else f"{link.price:.2f}"
+        f"  {country}: {count} ({count / total * 100:.1f}%)"
+        for country, count in countries.most_common()
+    ) if total else "  —"
+    price = "-" if link.price is None else f"{float(link.price):.4f}"
     total_cost = "-" if stats["total_cost"] is None else f"{stats['total_cost']:.2f}"
     await message.answer(
         "📊 <b>Статистика реферальной ссылки</b>\n\n"
         f"ID: <code>#{link.code}</code>\n"
         f"Ссылка: <code>{url}</code>\n\n"
-        f"Переходов: <code>{stats['clicks']}</code>\n"
+        f"Переходов: <code>{total}</code>\n"
         f"Premium: <code>{stats['premium']}</code>\n"
         f"Цена перехода: <code>{price}</code>\n"
         f"Итоговая стоимость: <code>{total_cost}</code>\n\n"
@@ -54,28 +56,33 @@ async def cmd_start(message: types.Message, bot: Bot, state: FSMContext):
     parts = message.text.split()
     start_param = parts[1] if len(parts) > 1 else None
 
-    # Реферальный переход фиксируется непосредственно при /start.
-    # is_allowed — флаг, который пропускает пользователя дальше в текущую логику.
+    # Сначала проверяем наличие пользователя: реферальный переход считается
+    # только для нового пользователя, которого ещё нет в БД.
+    is_user = await user_checker(telegram_id)
     is_allowed = False
     referral_link = None
+
     if start_param and start_param.startswith("ad_"):
         referral_name = start_param[3:]
         if referral_name:
             referral_link = await get_referral_link_by_name(referral_name)
             if referral_link:
-                is_allowed = await record_referral_click(
-                    referral_name,
-                    telegram_id,
-                    message.from_user.language_code,
-                    bool(message.from_user.is_premium),
-                )
+                is_admin = str(telegram_id) == str(ADMIN_ID)
+                is_viewer = referral_link.viewer_id is not None and telegram_id == referral_link.viewer_id
 
-                # Админ или назначенный viewer получает статистику сразу при переходе.
-                if telegram_id == referral_link.viewer_id or str(telegram_id) == str(ADMIN_ID):
+                # Админ и viewer могут открыть ссылку, но никогда не считаются переходом.
+                if is_admin or is_viewer:
                     await _send_referral_stats(message, referral_link, bot)
                     return
 
-    is_user = await user_checker(telegram_id)
+                if not is_user:
+                    is_allowed = await record_referral_click(
+                        referral_name,
+                        telegram_id,
+                        message.from_user.language_code,
+                        bool(message.from_user.is_premium),
+                        ADMIN_ID,
+                    )
 
     if not is_user:
         ref_id = None
